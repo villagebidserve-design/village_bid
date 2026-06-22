@@ -1,0 +1,34 @@
+{% extends 'base/base.html' %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2>Won Auctions</h2>
+      <p class="text-muted">Review auctions you’ve won and track your purchases.</p>
+    </div>
+    <a href="{% url 'product_list' %}" class="btn btn-outline-primary">Browse more</a>
+  </div>
+
+  <div class="row g-4">
+    {% if auctions %}
+      {% for auction in auctions %}
+      <div class="col-md-6">
+        <div class="card shadow-sm border-0">
+          <div class="card-body">
+            <h5 class="card-title">{{ auction.product.title }}</h5>
+            <p class="text-muted mb-2">Final price: <strong>₹{{ auction.current_price }}</strong></p>
+            <p class="mb-2">Seller: {{ auction.seller.username }}</p>
+            <a href="{% url 'auction_detail' auction.pk %}" class="btn btn-outline-primary btn-sm">View auction</a>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    {% else %}
+      <div class="col-12">
+        <div class="alert alert-info">You haven’t won any auctions yet.</div>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

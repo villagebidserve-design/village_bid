@@ -1,0 +1,25 @@
+{% extends 'base/base.html' %}
+
+{% block content %}
+
+<h2>My Bids</h2>
+
+{% for bid in bids %}
+
+<div class="card mb-2">
+
+<div class="card-body">
+
+{{ bid.auction.product.title }}
+
+-
+
+₹{{ bid.amount }}
+
+</div>
+
+</div>
+
+{% endfor %}
+
+{% endblock %}

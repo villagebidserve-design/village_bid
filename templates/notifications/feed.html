@@ -1,0 +1,21 @@
+{% extends 'base/base.html' %}
+
+{% block content %}
+
+<h2>Auction Activity</h2>
+
+{% for notification in notifications %}
+
+<div class="card mb-2">
+
+    <div class="card-body">
+
+        {{ notification.message }}
+
+    </div>
+
+</div>
+
+{% endfor %}
+
+{% endblock %}

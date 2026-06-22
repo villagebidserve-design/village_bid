@@ -1,0 +1,94 @@
+{% extends 'base/base.html' %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row g-4">
+    <div class="col-lg-7">
+      <div class="card shadow-sm border-0">
+        {% if product.images.first %}
+        <img src="{{ product.images.first.image.url }}" class="card-img-top" alt="{{ product.title }}" style="object-fit:cover; height:420px;">
+        {% endif %}
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-start mb-3">
+            <div>
+              <h2 class="mb-1">{{ product.title }}</h2>
+              <p class="text-muted mb-1">{{ product.category.name }} · {{ product.location }}</p>
+              {% if product.premium_listing %}<span class="badge bg-warning text-dark">Premium Listing</span>{% endif %}
+              {% if product.auction_enabled %}<span class="badge bg-success ms-2">Auction</span>{% endif %}
+            </div>
+            <a href="{% url 'add_favorite' product.id %}" class="btn btn-outline-danger">❤️ Favorite</a>
+          </div>
+          <p class="lead">{{ product.description }}</p>
+          <div class="d-flex align-items-center justify-content-between mt-4">
+            <h3 class="text-primary">₹{{ product.price }}</h3>
+            <div class="d-flex gap-2">
+              <a href="{% url 'create_product' %}" class="btn btn-outline-secondary">Request more info</a>
+              {% if auction and auction.is_active and product.auction_enabled %}
+                <a href="{% url 'auction_detail' auction.id %}" class="btn btn-success">Bid Now</a>
+              {% elif auction and product.auction_enabled %}
+                <a class="btn btn-secondary disabled" tabindex="-1" aria-disabled="true">Auction Closed</a>
+              {% elif product.auction_enabled and not auction %}
+                <span class="badge bg-warning text-dark">Auction pending setup</span>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-5">
+      <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body">
+          <h4>Seller Information</h4>
+          <p class="mb-1"><strong>{{ product.seller.username }}</strong></p>
+          <p class="text-muted">Seller Rating: <strong>{{ average_rating|floatformat:1 }}/5</strong></p>
+          <p class="text-muted">Reviews: <strong>{{ review_count }}</strong></p>
+          {% if average_rating >= 4.5 %}
+          <span class="badge bg-success">Trusted Seller</span>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="card shadow-sm border-0">
+        <div class="card-body">
+          <h5>Listing details</h5>
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item">Location: {{ product.location }}</li>
+            <li class="list-group-item">Price: ₹{{ product.price }}</li>
+            <li class="list-group-item">Category: {{ product.category.name }}</li>
+            <li class="list-group-item">Published: {{ product.created_at|date:"M d, Y" }}</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mt-5">
+    <h3>Reviews</h3>
+    {% for review in reviews %}
+    <div class="card mb-3">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <strong>{{ review.reviewer.username }}</strong>
+          <span>⭐ {{ review.rating }}/5</span>
+        </div>
+        <p class="mb-0">{{ review.comment }}</p>
+      </div>
+    </div>
+    {% empty %}
+    <div class="alert alert-light">No reviews yet for this product.</div>
+    {% endfor %}
+
+    <div class="card shadow-sm border-0 mt-4">
+      <div class="card-body">
+        <h4 class="mb-3">Leave a review</h4>
+        <form method="POST" action="{% url 'add_review' product.id %}">
+          {% csrf_token %}
+          {{ review_form.as_p }}
+          <button class="btn btn-success">Submit Review</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

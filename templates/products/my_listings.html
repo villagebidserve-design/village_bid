@@ -1,0 +1,212 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}My Listings - VillageBid{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row mb-4">
+        <div class="col">
+            <h2 class="fw-bold">
+                <i class="fas fa-list"></i> My Listings
+            </h2>
+            <p class="text-muted">Manage your products and auctions</p>
+        </div>
+        <div class="col-md-3 text-end">
+            <a href="{% url 'create_product' %}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Create New
+            </a>
+        </div>
+    </div>
+
+    <!-- Filter Tabs -->
+    <ul class="nav nav-tabs mb-4" role="tablist">
+        <li class="nav-item">
+            <a class="nav-link {% if status == '' %}active{% endif %}" href="?status=">All Products</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {% if status == 'draft' %}active{% endif %}" href="?status=draft">Drafts</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {% if status == 'approved' %}active{% endif %}" href="?status=approved">Active</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {% if status == 'sold' %}active{% endif %}" href="?status=sold">Sold</a>
+        </li>
+    </ul>
+
+    {% if products %}
+        <div class="row g-4">
+            {% for product in products %}
+                <div class="col-md-6 col-lg-4">
+                    <div class="card card-hover h-100 border-0 shadow-sm">
+                        <!-- Image -->
+                        <div class="position-relative" style="height: 180px; overflow: hidden;">
+                            {% if product.images.all.first.image %}
+                                <img src="{{ product.images.all.first.image.url }}" class="card-img-top w-100" style="height: 100%; object-fit: cover;">
+                            {% else %}
+                                <div class="w-100 h-100 bg-light d-flex align-items-center justify-content-center">
+                                    <i class="fas fa-image text-muted" style="font-size: 50px;"></i>
+                                </div>
+                            {% endif %}
+                            
+                            <!-- Status Badge -->
+                            <span class="badge {% if product.status == 'approved' %}bg-success{% elif product.status == 'draft' %}bg-secondary{% elif product.status == 'sold' %}bg-dark{% else %}bg-warning{% endif %} position-absolute top-0 start-0 m-2">
+                                {{ product.get_status_display }}
+                            </span>
+                        </div>
+
+                        <!-- Content -->
+                        <div class="card-body">
+                            <h6 class="card-title text-truncate">{{ product.title }}</h6>
+                            
+                            <p class="text-muted small mb-2">
+                                <i class="fas fa-map-marker-alt"></i> {{ product.location }}
+                            </p>
+
+                            <!-- Price & Views -->
+                            <div class="mb-3">
+                                <p class="h6 text-primary fw-bold mb-1">₹{{ product.price }}</p>
+                                <small class="text-muted">
+                                    <i class="fas fa-eye"></i> {{ product.views }} views
+                                </small>
+                            </div>
+
+                            <!-- Stats -->
+                            <p class="small text-muted mb-3">
+                                {% if product.auction %}
+                                    <span class="badge bg-info">Auction Active</span>
+                                {% endif %}
+                                {% if product.likes > 0 %}
+                                    <span class="badge bg-light text-dark">
+                                        <i class="fas fa-heart"></i> {{ product.likes }} likes
+                                    </span>
+                                {% endif %}
+                            </p>
+
+                            <!-- Posted Date -->
+                            <p class="small text-muted mb-3">
+                                Posted: {{ product.created_at|date:"M d, Y" }}
+                            </p>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="card-footer bg-light border-top-0">
+                            <div class="d-grid gap-2">
+                                <a href="{% url 'product_detail' product.id %}" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-eye"></i> View
+                                </a>
+                                <a href="{% url 'edit_product' product.id %}" class="btn btn-sm btn-outline-secondary">
+                                    <i class="fas fa-edit"></i> Edit
+                                </a>
+                            </div>
+                            {% if product.status == 'draft' %}
+                                <button type="button" class="btn btn-sm btn-outline-danger w-100 mt-2" data-bs-toggle="modal" data-bs-target="#deleteModal" data-product-id="{{ product.id }}">
+                                    <i class="fas fa-trash"></i> Delete
+                                </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        {% if products.has_other_pages %}
+            <nav aria-label="Page navigation" class="mt-5">
+                <ul class="pagination justify-content-center">
+                    {% if products.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ products.previous_page_number }}">Previous</a>
+                        </li>
+                    {% endif %}
+
+                    {% for num in products.paginator.page_range %}
+                        {% if products.number == num %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ num }}</span>
+                            </li>
+                        {% elif num > products.number|add:'-3' and num < products.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if products.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ products.next_page_number }}">Next</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+    {% else %}
+        <div class="alert alert-info text-center py-5">
+            <h5><i class="fas fa-inbox"></i> No listings found</h5>
+            <p class="mb-3">You haven't created any listings yet</p>
+            <a href="{% url 'create_product' %}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Create Your First Listing
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Delete Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete this listing?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form method="post" style="display: inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="product_id" id="productId">
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const deleteModal = document.getElementById('deleteModal');
+    deleteModal.addEventListener('show.bs.modal', function(e) {
+        const productId = e.relatedTarget.dataset.productId;
+        document.getElementById('productId').value = productId;
+    });
+</script>
+{% endblock %}
+            <p class="mb-3 text-truncate">{{ product.description|truncatechars:100 }}</p>
+            <div class="mb-3">
+              {% if product.approved %}
+              <span class="badge bg-success">Approved</span>
+              {% else %}
+              <span class="badge bg-warning text-dark">Pending approval</span>
+              {% endif %}
+              {% if product.premium_listing %}
+              <span class="badge bg-warning text-dark">Premium</span>
+              {% endif %}
+            </div>
+            <div class="mt-auto d-flex gap-2">
+              <a href="{% url 'edit_product' product.id %}" class="btn btn-outline-primary w-100">Edit</a>
+              <a href="{% url 'delete_product' product.id %}" class="btn btn-outline-danger w-100">Delete</a>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    {% else %}
+      <div class="col-12">
+        <div class="alert alert-info">You do not have any listings yet.</div>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

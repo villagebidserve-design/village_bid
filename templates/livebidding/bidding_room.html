@@ -1,0 +1,488 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Live Bidding - {{ auction.product.title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.bid-history-container {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.bid-item {
+    padding: 10px;
+    border-left: 4px solid #2563eb;
+    margin-bottom: 8px;
+    background: #f9fafb;
+    border-radius: 4px;
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.bid-item.winning {
+    border-left-color: #16a34a;
+    background: #f0fdf4;
+}
+
+.bid-item.outbid {
+    border-left-color: #ef4444;
+    background: #fef2f2;
+}
+
+.countdown {
+    font-size: 24px;
+    font-weight: bold;
+    color: #2563eb;
+}
+
+.countdown.warning {
+    color: #f59e0b;
+}
+
+.countdown.critical {
+    color: #ef4444;
+}
+
+.bidder-card {
+    padding: 12px;
+    background: #f3f4f6;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    border-left: 3px solid #2563eb;
+}
+
+.bidder-card.you {
+    border-left-color: #16a34a;
+    background: #f0fdf4;
+}
+
+.current-highest {
+    background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+    color: white;
+    padding: 20px;
+    border-radius: 12px;
+    text-align: center;
+}
+
+.current-highest h2 {
+    margin: 0;
+    font-size: 32px;
+    font-weight: 700;
+}
+
+.btn-place-bid {
+    background-color: #16a34a;
+    border-color: #16a34a;
+}
+
+.btn-place-bid:hover {
+    background-color: #15803d;
+    border-color: #15803d;
+}
+
+.socket-status {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 5px;
+}
+
+.socket-status.connected {
+    background-color: #16a34a;
+}
+
+.socket-status.disconnected {
+    background-color: #ef4444;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header with Auction Info -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1><i class="fas fa-gavel" style="color: #2563eb;"></i> {{ auction.product.title }}</h1>
+            <p class="text-muted">
+                Seller: 
+                {% if auction.seller.verification_badge %}
+                <span class="badge bg-success"><i class="fas fa-check-circle"></i></span>
+                {% endif %}
+                {{ auction.seller.username }} (⭐ {{ auction.seller.seller_rating }}/5)
+            </p>
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i>
+                Your Bidder ID: <strong>{{ anon_bidder.anonymous_id }}</strong> - Your identity is protected
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <small class="text-muted">Auction Status</small>
+                    <div class="d-flex align-items-center">
+                        <span class="socket-status connected" id="socket-status"></span>
+                        <span id="connection-status">Connected</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Left Column: Live Bid Ticker -->
+        <div class="col-md-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <!-- Current Highest Bid -->
+                    <div class="current-highest mb-4">
+                        <small class="opacity-75">Current Highest Bid</small>
+                        <h2 id="highest-bid">₹{{ bidding_room.highest_bid|default:auction.starting_price }}</h2>
+                        <small id="winning-bidder">Bidder: <span id="winning-bidder-id">{{ anon_bidder.anonymous_id }}</span></small>
+                    </div>
+
+                    <!-- Bid History -->
+                    <h5 class="mb-3"><i class="fas fa-history"></i> Bid History</h5>
+                    <div class="bid-history-container" id="bid-history">
+                        {% for bid in recent_bids %}
+                        <div class="bid-item {% if bid.is_winning %}winning{% endif %}">
+                            <div class="d-flex justify-content-between">
+                                <strong>{{ bid.anonymous_id.anonymous_id }}</strong>
+                                <span style="color: green; font-weight: bold;">₹{{ bid.amount }}</span>
+                            </div>
+                            <small class="text-muted">{{ bid.created_at|timesince }} ago</small>
+                        </div>
+                        {% empty %}
+                        <p class="text-muted text-center py-4">No bids yet. Be the first to bid!</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Auction Details -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="fas fa-info-circle"></i> Auction Details</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <small class="text-muted">Starting Price</small>
+                            <p class="h5">₹{{ auction.starting_price }}</p>
+                        </div>
+                        <div class="col-md-4">
+                            <small class="text-muted">Minimum Bid Increment</small>
+                            <p class="h5">₹{{ auction.minimum_bid_increment }}</p>
+                        </div>
+                        <div class="col-md-4">
+                            <small class="text-muted">Reserve Price</small>
+                            <p class="h5">
+                                {% if auction.reserve_price %}
+                                ₹{{ auction.reserve_price }}
+                                {% else %}
+                                <span class="badge bg-secondary">None</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <small class="text-muted">Total Bids</small>
+                            <p class="h5" id="total-bids">{{ bidding_room.total_bids }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <small class="text-muted">Active Bidders</small>
+                            <p class="h5" id="unique-bidders">{{ bidding_room.unique_bidders }}</p>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <small class="text-muted">Auction Description</small>
+                        <p>{{ auction.product.description }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Bid Form & Bidders -->
+        <div class="col-md-4">
+            <!-- Countdown Timer -->
+            <div class="card shadow-sm mb-4 border-0">
+                <div class="card-body text-center">
+                    <small class="text-muted">Time Remaining</small>
+                    <div class="countdown" id="countdown" data-end-time="{{ auction.end_time|date:'c' }}">
+                        00:00:00
+                    </div>
+                </div>
+            </div>
+
+            <!-- Place Bid Form -->
+            {% if not is_seller %}
+            <div class="card shadow-sm mb-4 border-success">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-edit"></i> Place Your Bid</h5>
+                </div>
+                <div class="card-body">
+                    <form id="bid-form">
+                        <div class="mb-3">
+                            <label class="form-label">Bid Amount (₹)</label>
+                            <input type="number" class="form-control form-control-lg" id="bid-amount" 
+                                   placeholder="Enter bid amount" step="0.01" min="0" required>
+                            <small class="form-text text-muted" id="min-bid-hint">
+                                Minimum: ₹<span id="min-bid-value">0</span>
+                            </small>
+                        </div>
+                        <button type="button" class="btn btn-place-bid btn-lg w-100" onclick="placeBid()">
+                            <i class="fas fa-gavel"></i> Place Bid
+                        </button>
+                    </form>
+                    <div id="bid-error" class="alert alert-danger mt-3" style="display:none;"></div>
+                    <div id="bid-success" class="alert alert-success mt-3" style="display:none;"></div>
+                </div>
+            </div>
+            {% else %}
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i> 
+                <strong>You are the seller</strong>. Sellers cannot bid on their own auctions.
+            </div>
+            {% endif %}
+
+            <!-- Active Bidders List -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="fas fa-users"></i> Active Bidders</h5>
+                </div>
+                <div class="card-body">
+                    <div id="bidders-list">
+                        {% for bidder in bidders %}
+                        <div class="bidder-card {% if bidder == anon_bidder %}you{% endif %}">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>{{ bidder.anonymous_id }}</strong>
+                                    <br>
+                                    <small class="text-muted">
+                                        <i class="fas fa-map-marker-alt"></i> 
+                                        {{ bidder.distance_km|default:"?" }} km away
+                                    </small>
+                                </div>
+                                {% if bidder == anon_bidder %}
+                                <span class="badge bg-success">You</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// WebSocket Configuration
+const auction_id = {{ auction.id }};
+const user_id = {{ user.id }};
+const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+const ws_url = `${protocol}//${window.location.host}/ws/bidding/auction/${auction_id}/`;
+
+let websocket = null;
+let currentUser = null;
+let minBidAmount = {{ auction.starting_price }};
+
+function connectWebSocket() {
+    websocket = new WebSocket(ws_url);
+    
+    websocket.onopen = function(event) {
+        console.log('WebSocket connected');
+        updateConnectionStatus(true);
+    };
+    
+    websocket.onmessage = function(event) {
+        const data = JSON.parse(event.data);
+        handleWebSocketMessage(data);
+    };
+    
+    websocket.onerror = function(event) {
+        console.error('WebSocket error:', event);
+        updateConnectionStatus(false);
+    };
+    
+    websocket.onclose = function(event) {
+        console.log('WebSocket closed');
+        updateConnectionStatus(false);
+        // Attempt to reconnect after 3 seconds
+        setTimeout(connectWebSocket, 3000);
+    };
+}
+
+function handleWebSocketMessage(data) {
+    const type = data.type;
+    
+    switch(type) {
+        case 'room_joined':
+            handleRoomJoined(data);
+            break;
+        case 'new_bid':
+            handleNewBid(data.bid_data);
+            break;
+        case 'bidder_joined':
+            console.log('Bidder joined:', data.anonymous_id);
+            break;
+        case 'bid_accepted':
+            showSuccess('Bid placed successfully!');
+            document.getElementById('bid-amount').value = '';
+            break;
+        case 'error':
+            showError(data.message);
+            break;
+        case 'auction_ended':
+            handleAuctionEnded(data);
+            break;
+        case 'you_were_outbid':
+            showWarning(`You were outbid! New highest: ₹${data.new_highest_bid}`);
+            break;
+    }
+}
+
+function handleRoomJoined(data) {
+    console.log('Room joined:', data);
+    currentUser = data.anonymous_id;
+    updateMinBidAmount();
+}
+
+function handleNewBid(bidData) {
+    // Update highest bid display
+    document.getElementById('highest-bid').textContent = `₹${bidData.amount}`;
+    document.getElementById('winning-bidder-id').textContent = bidData.anonymous_id;
+    
+    // Add to bid history
+    const bidHistory = document.getElementById('bid-history');
+    const newBid = document.createElement('div');
+    newBid.className = 'bid-item winning';
+    newBid.innerHTML = `
+        <div class="d-flex justify-content-between">
+            <strong>${bidData.anonymous_id}</strong>
+            <span style="color: green; font-weight: bold;">₹${bidData.amount}</span>
+        </div>
+        <small class="text-muted">just now</small>
+    `;
+    bidHistory.insertBefore(newBid, bidHistory.firstChild);
+    
+    // Keep only last 20 bids
+    while (bidHistory.children.length > 20) {
+        bidHistory.removeChild(bidHistory.lastChild);
+    }
+    
+    updateMinBidAmount();
+}
+
+function placeBid() {
+    const amount = parseFloat(document.getElementById('bid-amount').value);
+    
+    if (!amount || amount < minBidAmount) {
+        showError(`Minimum bid must be ₹${minBidAmount}`);
+        return;
+    }
+    
+    if (websocket && websocket.readyState === WebSocket.OPEN) {
+        websocket.send(JSON.stringify({
+            type: 'place_bid',
+            amount: amount
+        }));
+    } else {
+        showError('Connection lost. Please refresh the page.');
+    }
+}
+
+function updateMinBidAmount() {
+    const currentHighest = parseFloat(document.getElementById('highest-bid').textContent.replace('₹', ''));
+    const increment = {{ auction.minimum_bid_increment }};
+    minBidAmount = currentHighest + increment;
+    document.getElementById('min-bid-value').textContent = minBidAmount.toFixed(2);
+}
+
+function updateConnectionStatus(connected) {
+    const status = document.getElementById('socket-status');
+    const statusText = document.getElementById('connection-status');
+    
+    if (connected) {
+        status.classList.remove('disconnected');
+        status.classList.add('connected');
+        statusText.textContent = 'Connected';
+    } else {
+        status.classList.remove('connected');
+        status.classList.add('disconnected');
+        statusText.textContent = 'Disconnected';
+    }
+}
+
+function updateCountdown() {
+    const countdownEl = document.getElementById('countdown');
+    const endTime = new Date(countdownEl.dataset.endTime);
+    const now = new Date();
+    const diff = endTime - now;
+    
+    if (diff <= 0) {
+        countdownEl.textContent = 'AUCTION ENDED';
+        countdownEl.classList.add('critical');
+        return;
+    }
+    
+    const hours = Math.floor(diff / 3600000);
+    const minutes = Math.floor((diff % 3600000) / 60000);
+    const seconds = Math.floor((diff % 60000) / 1000);
+    
+    countdownEl.textContent = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    
+    // Color based on remaining time
+    if (diff < 300000) { // Less than 5 minutes
+        countdownEl.classList.add('critical');
+        countdownEl.classList.remove('warning');
+    } else if (diff < 600000) { // Less than 10 minutes
+        countdownEl.classList.add('warning');
+        countdownEl.classList.remove('critical');
+    } else {
+        countdownEl.classList.remove('warning', 'critical');
+    }
+}
+
+function showError(message) {
+    const errorEl = document.getElementById('bid-error');
+    errorEl.textContent = message;
+    errorEl.style.display = 'block';
+    setTimeout(() => { errorEl.style.display = 'none'; }, 5000);
+}
+
+function showSuccess(message) {
+    const successEl = document.getElementById('bid-success');
+    successEl.textContent = message;
+    successEl.style.display = 'block';
+    setTimeout(() => { successEl.style.display = 'none'; }, 3000);
+}
+
+function showWarning(message) {
+    const errorEl = document.getElementById('bid-error');
+    errorEl.textContent = '⚠️ ' + message;
+    errorEl.style.display = 'block';
+    setTimeout(() => { errorEl.style.display = 'none'; }, 5000);
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    connectWebSocket();
+    setInterval(updateCountdown, 1000);
+    updateCountdown();
+    updateMinBidAmount();
+});
+</script>
+{% endblock %}

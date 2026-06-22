@@ -1,0 +1,161 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}VillageBid - Livestock & Farm Equipment Marketplace{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="container-fluid p-0 mb-5">
+    <div style="background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%); color: white; padding: 80px 20px;">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <h1 class="display-3 fw-bold mb-3">Buy & Sell Livestock Online</h1>
+                    <p class="lead mb-4">The trusted marketplace for quality livestock and farm equipment. Connect with buyers and sellers nationwide.</p>
+                    <div class="d-flex gap-3 flex-wrap">
+                        <a href="{% url 'product_list' %}" class="btn btn-warning btn-lg px-4">
+                            <i class="fas fa-shopping-cart"></i> Browse Listings
+                        </a>
+                        {% if user.is_authenticated %}
+                            <a href="{% url 'create_product' %}" class="btn btn-outline-light btn-lg px-4">
+                                <i class="fas fa-plus"></i> Sell Now
+                            </a>
+                        {% else %}
+                            <a href="{% url 'signup' %}" class="btn btn-outline-light btn-lg px-4">
+                                <i class="fas fa-user-plus"></i> Get Started
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-lg-6 text-center">
+                    <div class="display-1" style="font-size: 120px; opacity: 0.2;">
+                        <i class="fas fa-gavel"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Key Features -->
+<div class="container mb-5">
+    <h2 class="text-center mb-5 fw-bold">Why Choose VillageBid?</h2>
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card card-hover h-100 border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <div style="font-size: 40px; color: #2563eb; margin-bottom: 1rem;">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h5 class="card-title fw-bold">Verified Sellers</h5>
+                    <p class="card-text">All sellers are verified to ensure quality and authenticity of livestock.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card card-hover h-100 border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <div style="font-size: 40px; color: #10b981; margin-bottom: 1rem;">
+                        <i class="fas fa-lock"></i>
+                    </div>
+                    <h5 class="card-title fw-bold">Secure Payments</h5>
+                    <p class="card-text">Safe and encrypted payment processing with Razorpay integration.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card card-hover h-100 border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <div style="font-size: 40px; color: #f59e0b; margin-bottom: 1rem;">
+                        <i class="fas fa-headset"></i>
+                    </div>
+                    <h5 class="card-title fw-bold">24/7 Support</h5>
+                    <p class="card-text">Dedicated customer support team available round the clock.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Categories Section -->
+<div class="container mb-5">
+    <h2 class="text-center mb-5 fw-bold">Popular Categories</h2>
+    <div class="row g-4">
+        <div class="col-sm-6 col-md-4 col-lg-3">
+            <div class="card card-hover h-100 text-decoration-none border-0 shadow-sm" style="cursor: pointer;">
+                <div class="card-body text-center">
+                    <div style="font-size: 50px; margin-bottom: 1rem;">🐔</div>
+                    <h6 class="fw-bold">Poultry</h6>
+                    <small class="text-muted">Chickens, Ducks, Turkeys</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-md-4 col-lg-3">
+            <div class="card card-hover h-100 text-decoration-none border-0 shadow-sm" style="cursor: pointer;">
+                <div class="card-body text-center">
+                    <div style="font-size: 50px; margin-bottom: 1rem;">🐐</div>
+                    <h6 class="fw-bold">Goats</h6>
+                    <small class="text-muted">Breeds & Dairy Goats</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-md-4 col-lg-3">
+            <div class="card card-hover h-100 text-decoration-none border-0 shadow-sm" style="cursor: pointer;">
+                <div class="card-body text-center">
+                    <div style="font-size: 50px; margin-bottom: 1rem;">🐄</div>
+                    <h6 class="fw-bold">Cattle</h6>
+                    <small class="text-muted">Dairy & Beef Cattle</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-md-4 col-lg-3">
+            <div class="card card-hover h-100 text-decoration-none border-0 shadow-sm" style="cursor: pointer;">
+                <div class="card-body text-center">
+                    <div style="font-size: 50px; margin-bottom: 1rem;">🚜</div>
+                    <h6 class="fw-bold">Equipment</h6>
+                    <small class="text-muted">Farm & Tools</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- CTA Section -->
+<div class="container mb-5">
+    <div style="background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%); color: white; padding: 60px 30px; border-radius: 10px;">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h3 class="fw-bold mb-2">Ready to Start Selling?</h3>
+                <p class="mb-0">List your livestock or farm equipment in minutes. Connect with thousands of buyers across India.</p>
+            </div>
+            <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                <a href="{% url 'signup' %}" class="btn btn-warning btn-lg">
+                    <i class="fas fa-arrow-right"></i> Get Started
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Section -->
+<div class="container mb-5">
+    <div class="row text-center g-4">
+        <div class="col-md-3">
+            <h3 class="fw-bold text-primary">10K+</h3>
+            <p class="text-muted">Active Listings</p>
+        </div>
+        <div class="col-md-3">
+            <h3 class="fw-bold text-success">5K+</h3>
+            <p class="text-muted">Verified Sellers</p>
+        </div>
+        <div class="col-md-3">
+            <h3 class="fw-bold text-warning">50K+</h3>
+            <p class="text-muted">Happy Buyers</p>
+        </div>
+        <div class="col-md-3">
+            <h3 class="fw-bold text-danger">₹50Cr+</h3>
+            <p class="text-muted">Transactions</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

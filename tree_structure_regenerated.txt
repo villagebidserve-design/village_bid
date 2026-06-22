@@ -1,0 +1,163 @@
+db.sqlite3
+manage.py
+requirements.txt
+reset_villagebid.bat
+setup_villagebid.bat
+sprint2_user_setup.bat
+tree_structure.txt
+accounts/
+	__init__.py
+	admin.py
+	apps.py
+	forms.py
+	models.py
+	tests.py
+	urls.py
+	views.py
+	migrations/
+		__init__.py
+		0001_initial.py
+		0002_profile.py
+adminpanel/
+	__init__.py
+	admin.py
+	apps.py
+	models.py
+	tests.py
+	views.py
+	migrations/
+		__init__.py
+auctions/
+	__init__.py
+	admin.py
+	apps.py
+	models.py
+	tests.py
+	views.py
+	migrations/
+		__init__.py
+bids/
+	__init__.py
+	admin.py
+	apps.py
+	models.py
+	tests.py
+	views.py
+	migrations/
+		__init__.py
+categories/
+	__init__.py
+	admin.py
+	apps.py
+	models.py
+	tests.py
+	views.py
+	migrations/
+		__init__.py
+config/
+	__init__.py
+	asgi.py
+	settings.py
+	urls.py
+	wsgi.py
+core/
+	__init__.py
+	admin.py
+	apps.py
+	models.py
+	tests.py
+	urls.py
+	views.py
+	migrations/
+		__init__.py
+dashboard/
+	__init__.py
+	admin.py
+	apps.py
+	models.py
+	tests.py
+	urls.py
+	views.py
+	migrations/
+		__init__.py
+favorites/
+	__init__.py
+	admin.py
+	apps.py
+	models.py
+	tests.py
+	views.py
+	migrations/
+		__init__.py
+media/
+messages_app/
+	__init__.py
+	admin.py
+	apps.py
+	models.py
+	tests.py
+	views.py
+	migrations/
+		__init__.py
+notifications/
+	__init__.py
+	admin.py
+	apps.py
+	models.py
+	tests.py
+	views.py
+	migrations/
+		__init__.py
+payments/
+	__init__.py
+	admin.py
+	apps.py
+	models.py
+	tests.py
+	views.py
+	migrations/
+		__init__.py
+products/
+	__init__.py
+	admin.py
+	apps.py
+	models.py
+	tests.py
+	views.py
+	migrations/
+		__init__.py
+reports/
+	__init__.py
+	admin.py
+	apps.py
+	models.py
+	tests.py
+	views.py
+	migrations/
+		__init__.py
+reviews/
+	__init__.py
+	admin.py
+	apps.py
+	models.py
+	tests.py
+	views.py
+	migrations/
+		__init__.py
+static/
+	css/
+		main.css
+	images/
+	js/
+templates/
+	accounts/
+		login.html
+		signup.html
+	auctions/
+	base/
+		base.html
+	core/
+		home.html
+	dashboard/
+		home.html
+	products/

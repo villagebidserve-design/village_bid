@@ -1,0 +1,150 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Sign Up - VillageBid{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card border-0 shadow-lg mt-5 mb-5">
+                <div class="card-body p-5">
+                    <div class="text-center mb-4">
+                        <h2 class="fw-bold text-primary">
+                            <i class="fas fa-user-plus"></i> Create Account
+                        </h2>
+                        <p class="text-muted">Join VillageBid and start trading livestock</p>
+                    </div>
+
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+
+                        {% for field in form %}
+                            {% if field.name != 'password2' %}
+                                <div class="mb-3">
+                                    <label for="{{ field.id_for_label }}" class="form-label fw-bold">
+                                        {% if field.name == 'username' %}
+                                            <i class="fas fa-user"></i>
+                                        {% elif field.name == 'email' %}
+                                            <i class="fas fa-envelope"></i>
+                                        {% elif field.name == 'first_name' %}
+                                            <i class="fas fa-id-card"></i>
+                                        {% elif field.name == 'last_name' %}
+                                            <i class="fas fa-id-card"></i>
+                                        {% elif field.name == 'password1' %}
+                                            <i class="fas fa-lock"></i>
+                                        {% endif %}
+                                        {{ field.label }}
+                                    </label>
+                                    {{ field }}
+                                    {% if field.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ field.errors.0 }}
+                                        </div>
+                                    {% endif %}
+                                    {% if field.help_text %}
+                                        <small class="form-text text-muted d-block mt-1">
+                                            {{ field.help_text|safe }}
+                                        </small>
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+
+                        <!-- Password confirmation field -->
+                        <div class="mb-3">
+                            <label for="{{ form.password2.id_for_label }}" class="form-label fw-bold">
+                                <i class="fas fa-lock-open"></i> Confirm Password
+                            </label>
+                            {{ form.password2 }}
+                            {% if form.password2.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.password2.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        {% if not otp_sent %}
+                            <div class="d-grid gap-2 mb-3">
+                                <button type="submit" name="send_otp" class="btn btn-primary btn-lg fw-bold">
+                                    <i class="fas fa-envelope"></i> Send OTP to Email
+                                </button>
+                            </div>
+                        {% else %}
+                            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                <strong><i class="fas fa-check-circle"></i> OTP Sent!</strong> Check your email for the verification code.
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                            <div class="mb-3">
+                                <label for="{{ otp_form.otp_code.id_for_label }}" class="form-label fw-bold">
+                                    <i class="fas fa-key"></i> OTP Code
+                                </label>
+                                {{ otp_form.otp_code }}
+                                {% if otp_form.otp_code.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ otp_form.otp_code.errors.0 }}
+                                    </div>
+                                {% else %}
+                                    <small class="form-text text-muted d-block mt-1">Enter the 6-digit code from the box above</small>
+                                {% endif %}
+                            </div>
+                            <div class="d-grid gap-2 mb-3">
+                                <button type="submit" name="verify_otp" class="btn btn-success btn-lg fw-bold">
+                                    <i class="fas fa-check"></i> Verify OTP and Create Account
+                                </button>
+                            </div>
+                        {% endif %}
+                    </form>
+
+                    <hr class="my-4">
+
+                    <div class="text-center">
+                        <p class="text-muted mb-3">Already have an account?</p>
+                        <a href="{% url 'login' %}" class="btn btn-outline-primary w-100">
+                            <i class="fas fa-sign-in-alt"></i> Sign In
+                        </a>
+                    </div>
+
+                    <div class="text-center mt-3">
+                        <a href="/" class="text-decoration-none text-muted small">
+                            <i class="fas fa-arrow-left"></i> Back to Home
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    textarea,
+    select {
+        border: 1px solid #dee2e6;
+        border-radius: 0.375rem;
+        padding: 0.625rem 0.875rem;
+        font-size: 1rem;
+        width: 100%;
+    }
+    
+    input[type="text"]:focus,
+    input[type="email"]:focus,
+    input[type="password"]:focus,
+    textarea:focus,
+    select:focus {
+        border-color: #2563eb;
+        box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.25);
+    }
+</style>
+{% endblock %}

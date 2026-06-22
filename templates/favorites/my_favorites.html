@@ -1,0 +1,35 @@
+{% extends 'base/base.html' %}
+
+{% block content %}
+
+<h2>My Favorites</h2>
+
+<div class="row">
+
+{% for item in favorites %}
+
+<div class="col-md-4">
+
+<div class="card mb-3">
+
+<div class="card-body">
+
+<h5>
+{{ item.product.title }}
+</h5>
+
+<p>
+₹{{ item.product.price }}
+</p>
+
+</div>
+
+</div>
+
+</div>
+
+{% endfor %}
+
+</div>
+
+{% endblock %}

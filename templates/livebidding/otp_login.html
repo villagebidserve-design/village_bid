@@ -1,0 +1,337 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}OTP Login - Live Bidding{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-lg">
+                <div class="card-body p-5">
+                    <h2 class="card-title text-center mb-4">
+                        <i class="fas fa-leaf" style="color: #2563eb;"></i> Village Bid Approval
+                    </h2>
+                    <p class="text-center text-muted mb-4">Livestock Auction Platform</p>
+
+                    <!-- Step 1: Enter Email Address -->
+                    <div id="step-phone" class="step-container">
+                        <h4 class="mb-3">Enter Email Address</h4>
+                        <form id="email-form">
+                            <div class="mb-3">
+                                <label for="email-address" class="form-label">Email Address</label>
+                                <input type="email" class="form-control" id="email-address" placeholder="you@example.com" required>
+                                <small class="form-text text-muted">We'll send you a verification code by email.</small>
+                            </div>
+                            <button type="button" class="btn btn-primary w-100 btn-lg" onclick="sendOTP()">
+                                <i class="fas fa-envelope"></i> Send OTP
+                            </button>
+                        </form>
+                        <div id="email-error" class="alert alert-danger mt-3" style="display:none;"></div>
+                        <div id="email-success" class="alert alert-success mt-3" style="display:none;"></div>
+                    </div>
+
+                    <!-- Step 2: Enter OTP -->
+                    <div id="step-otp" class="step-container" style="display:none;">
+                        <h4 class="mb-3">Enter Verification Code</h4>
+                        <p class="text-muted small">OTP has been sent to <strong id="display-email"></strong></p>
+                        
+                        <form id="otp-form">
+                            <div class="mb-3">
+                                <label for="otp-code" class="form-label">Verification Code</label>
+                                <input type="text" class="form-control form-control-lg text-center" id="otp-code" 
+                                       placeholder="000000" maxlength="6" pattern="\d{6}" required>
+                                <small class="form-text text-muted">6-digit code from your email</small>
+                            </div>
+
+                            <!-- Timer -->
+                            <div class="text-center mb-3">
+                                <small id="otp-timer" class="text-danger"></small>
+                            </div>
+
+                            <button type="button" class="btn btn-success w-100 btn-lg" onclick="verifyOTP()">
+                                <i class="fas fa-check"></i> Verify & Login
+                            </button>
+                        </form>
+
+                        <div class="text-center mt-3">
+                            <button type="button" class="btn btn-link" onclick="resendOTP()">
+                                <i class="fas fa-redo"></i> Resend OTP
+                            </button>
+                            <span class="text-muted">|</span>
+                            <button type="button" class="btn btn-link" onclick="changeEmail()">
+                                <i class="fas fa-arrow-left"></i> Change Email
+                            </button>
+                        </div>
+
+                        <div id="otp-error" class="alert alert-danger mt-3" style="display:none;"></div>
+                        <div id="otp-success" class="alert alert-success mt-3" style="display:none;"></div>
+                    </div>
+
+                    <!-- Loading Spinner -->
+                    <div id="loading-spinner" class="text-center" style="display:none;">
+                        <div class="spinner-border" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-footer bg-light text-center py-3">
+                    <small class="text-muted">
+                        <i class="fas fa-lock"></i> Your data is secure and encrypted
+                    </small>
+                </div>
+            </div>
+
+            <!-- Features -->
+            <div class="row mt-5">
+                <div class="col-md-4 text-center mb-3">
+                    <div><i class="fas fa-horse fa-2x" style="color: #2563eb;"></i></div>
+                    <h6>Live Bidding</h6>
+                    <small class="text-muted">Real-time auction</small>
+                </div>
+                <div class="col-md-4 text-center mb-3">
+                    <div><i class="fas fa-user-secret fa-2x" style="color: #2563eb;"></i></div>
+                    <h6>Anonymous</h6>
+                    <small class="text-muted">Privacy protected</small>
+                </div>
+                <div class="col-md-4 text-center mb-3">
+                    <div><i class="fas fa-handshake fa-2x" style="color: #2563eb;"></i></div>
+                    <h6>Secure</h6>
+                    <small class="text-muted">Verified sellers</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    border: none;
+    border-radius: 12px;
+}
+
+.btn-primary {
+    background-color: #2563eb;
+    border-color: #2563eb;
+    border-radius: 8px;
+    font-weight: 600;
+}
+
+.btn-primary:hover {
+    background-color: #1e40af;
+    border-color: #1e40af;
+}
+
+.btn-success {
+    background-color: #16a34a;
+    border-color: #16a34a;
+    border-radius: 8px;
+    font-weight: 600;
+}
+
+.btn-success:hover {
+    background-color: #15803d;
+    border-color: #15803d;
+}
+
+.form-control, .input-group-text {
+    border-radius: 8px;
+    border: 2px solid #e5e7eb;
+    font-size: 16px;
+}
+
+.form-control:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.25);
+}
+
+.step-container {
+    animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+</style>
+
+<script>
+let loginEmail = '';
+let otpTimer = null;
+
+function showStep(stepId) {
+    document.getElementById('step-phone').style.display = stepId === 'phone' ? 'block' : 'none';
+    document.getElementById('step-otp').style.display = stepId === 'otp' ? 'block' : 'none';
+}
+
+function showLoading(show = true) {
+    document.getElementById('loading-spinner').style.display = show ? 'block' : 'none';
+}
+
+function sendOTP() {
+    const email = document.getElementById('email-address').value.trim();
+    
+    if (!email) {
+        showError('email', 'Please enter an email address');
+        return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        showError('email', 'Please enter a valid email address');
+        return;
+    }
+
+    loginEmail = email;
+    showLoading(true);
+
+    fetch('/livebidding/api/send-otp/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            email: email
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        showLoading(false);
+        if (data.success) {
+            showSuccess('email', 'OTP sent successfully! Check your email.');
+            setTimeout(() => {
+                document.getElementById('display-email').textContent = email;
+                showStep('otp');
+                startOTPTimer();
+                clearError('email');
+            }, 1500);
+        } else {
+            showError('email', data.message || 'Failed to send OTP');
+        }
+    })
+    .catch(error => {
+        showLoading(false);
+        showError('email', 'Error: ' + error.message);
+    });
+}
+
+function verifyOTP() {
+    const otp = document.getElementById('otp-code').value.trim();
+    
+    if (!otp || otp.length !== 6) {
+        showError('otp', 'Please enter a valid 6-digit OTP');
+        return;
+    }
+
+    showLoading(true);
+
+    fetch('/livebidding/api/verify-otp/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            email: loginEmail,
+            otp_code: otp
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        showLoading(false);
+        if (data.success) {
+            showSuccess('otp', 'Login successful! Redirecting...');
+            setTimeout(() => {
+                window.location.href = '/livebidding/auctions/';
+            }, 1500);
+        } else {
+            showError('otp', data.message || 'Invalid OTP');
+            document.getElementById('otp-code').value = '';
+        }
+    })
+    .catch(error => {
+        showLoading(false);
+        showError('otp', 'Error: ' + error.message);
+    });
+}
+
+function resendOTP() {
+    showLoading(true);
+
+    fetch('/livebidding/api/resend-otp/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            email: loginEmail
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        showLoading(false);
+        if (data.success) {
+            showSuccess('otp', 'New OTP sent successfully!');
+            startOTPTimer();
+        } else {
+            showError('otp', data.message || 'Failed to resend OTP');
+        }
+    })
+    .catch(error => {
+        showLoading(false);
+        showError('otp', 'Error: ' + error.message);
+    });
+}
+
+function changeEmail() {
+    loginEmail = '';
+    document.getElementById('email-address').value = '';
+    document.getElementById('otp-code').value = '';
+    clearError('email');
+    clearError('otp');
+    showStep('phone');
+    if (otpTimer) clearInterval(otpTimer);
+}
+
+function startOTPTimer() {
+    let timeLeft = 600; // 10 minutes
+    updateOTPTimer(timeLeft);
+
+    otpTimer = setInterval(() => {
+        timeLeft--;
+        updateOTPTimer(timeLeft);
+        if (timeLeft <= 0) {
+            clearInterval(otpTimer);
+        }
+    }, 1000);
+}
+
+function updateOTPTimer(seconds) {
+    const minutes = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    document.getElementById('otp-timer').textContent = 
+        `OTP expires in ${minutes}:${secs.toString().padStart(2, '0')}`;
+}
+
+function showError(field, message) {
+    const errorElement = document.getElementById(field + '-error');
+    errorElement.textContent = message;
+    errorElement.style.display = 'block';
+}
+
+function showSuccess(field, message) {
+    const successElement = document.getElementById(field + '-success');
+    successElement.textContent = message;
+    successElement.style.display = 'block';
+}
+
+function clearError(field) {
+    document.getElementById(field + '-error').style.display = 'none';
+    document.getElementById(field + '-success').style.display = 'none';
+}
+</script>
+{% endblock %}

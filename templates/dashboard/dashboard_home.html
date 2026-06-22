@@ -1,0 +1,68 @@
+{% extends 'base/base.html' %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="mb-1">Buyer Dashboard</h2>
+      <p class="text-muted">Track favorites, bid activity, and recent auction wins in one place.</p>
+    </div>
+    <a href="{% url 'won_auctions' %}" class="btn btn-primary">My Wins</a>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-md-6 col-xl-3">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="mb-0">Profile</h5>
+            <span class="badge bg-secondary">You</span>
+          </div>
+          <p class="mb-1">{{ user.username }}</p>
+          <p class="text-muted small">Member since {{ user.date_joined|date:'M Y' }}</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6 col-xl-3">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-body">
+          <h5 class="mb-2">Favorites</h5>
+          <p class="display-6">—</p>
+          <p class="text-muted small">Explore saved products and auctions here.</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6 col-xl-3">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-body">
+          <h5 class="mb-2">Active Bids</h5>
+          <p class="display-6">—</p>
+          <p class="text-muted small">Keep an eye on auctions you’re competing in.</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6 col-xl-3">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-body">
+          <h5 class="mb-2">Won Auctions</h5>
+          <p class="display-6">—</p>
+          <p class="text-muted small">Your winning bids will appear here.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mt-5">
+    <div class="card shadow-sm border-0">
+      <div class="card-body">
+        <h4>Quick actions</h4>
+        <div class="list-group list-group-flush">
+          <a href="{% url 'product_list' %}" class="list-group-item list-group-item-action">Browse Marketplace</a>
+          <a href="{% url 'create_product' %}" class="list-group-item list-group-item-action">Post a Listing</a>
+          <a href="{% url 'auction_detail' 1 %}" class="list-group-item list-group-item-action">View an Auction</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,157 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}My Bids - VillageBid{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h2 class="fw-bold mb-4">
+        <i class="fas fa-gavel"></i> My Bids
+    </h2>
+
+    {% if bids %}
+        <div class="row">
+            <div class="col-md-8">
+                {% for bid in bids %}
+                    <div class="card mb-4 border-0 shadow-sm">
+                        <div class="card-body">
+                            <div class="row">
+                                <!-- Product Image -->
+                                <div class="col-md-3">
+                                    {% if bid.auction.product.images.all.first.image %}
+                                        <img src="{{ bid.auction.product.images.all.first.image.url }}" class="img-fluid rounded" style="height: 150px; object-fit: cover;">
+                                    {% else %}
+                                        <div class="bg-light rounded d-flex align-items-center justify-content-center" style="height: 150px;">
+                                            <i class="fas fa-image text-muted" style="font-size: 40px;"></i>
+                                        </div>
+                                    {% endif %}
+                                </div>
+
+                                <!-- Details -->
+                                <div class="col-md-9">
+                                    <h5 class="card-title">{{ bid.auction.product.title }}</h5>
+                                    
+                                    <!-- Bid Information -->
+                                    <p class="mb-2">
+                                        <strong>Your Bid:</strong> 
+                                        <span class="h6 text-primary">₹{{ bid.amount }}</span>
+                                    </p>
+
+                                    <p class="mb-2">
+                                        <strong>Current Price:</strong> 
+                                        <span class="h6">₹{{ bid.auction.current_price }}</span>
+                                    </p>
+
+                                    <!-- Status -->
+                                    <p class="mb-2">
+                                        <strong>Status:</strong>
+                                        {% if bid.is_winning %}
+                                            <span class="badge bg-success">🏆 Winning</span>
+                                        {% elif bid.was_outbid %}
+                                            <span class="badge bg-danger">Outbid</span>
+                                        {% else %}
+                                            <span class="badge bg-warning">{{ bid.get_status_display }}</span>
+                                        {% endif %}
+                                    </p>
+
+                                    <!-- Auction Status -->
+                                    <p class="mb-3">
+                                        <strong>Auction:</strong>
+                                        {% if bid.auction.is_active %}
+                                            <span class="badge bg-info">Active</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Ended</span>
+                                        {% endif %}
+                                    </p>
+
+                                    <!-- Actions -->
+                                    <div class="d-flex gap-2">
+                                        <a href="{% url 'auction_detail' bid.auction.id %}" class="btn btn-sm btn-primary">
+                                            <i class="fas fa-eye"></i> View Auction
+                                        </a>
+                                        {% if bid.auction.is_active and bid.auction.can_bid %}
+                                            <a href="{% url 'auction_detail' bid.auction.id %}#place-bid" class="btn btn-sm btn-warning">
+                                                <i class="fas fa-plus"></i> Increase Bid
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <!-- Sidebar Stats -->
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm sticky-top" style="top: 20px;">
+                    <div class="card-header bg-primary text-white">
+                        <h6 class="mb-0"><i class="fas fa-chart-bar"></i> Bid Statistics</h6>
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-2">
+                            <i class="fas fa-check text-success"></i>
+                            <strong>Winning Bids:</strong> 
+                            <span class="float-end">{{ winning_count }}</span>
+                        </p>
+                        <p class="mb-2">
+                            <i class="fas fa-times text-danger"></i>
+                            <strong>Outbid:</strong> 
+                            <span class="float-end">{{ outbid_count }}</span>
+                        </p>
+                        <p class="mb-2">
+                            <i class="fas fa-hourglass-end text-warning"></i>
+                            <strong>Active:</strong> 
+                            <span class="float-end">{{ active_count }}</span>
+                        </p>
+                        <hr>
+                        <p class="mb-0">
+                            <strong>Total Bids Placed:</strong> 
+                            <span class="float-end">{{ total_bids }}</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        {% if bids.has_other_pages %}
+            <nav aria-label="Page navigation" class="mt-5">
+                <ul class="pagination justify-content-center">
+                    {% if bids.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ bids.previous_page_number }}">Previous</a>
+                        </li>
+                    {% endif %}
+
+                    {% for num in bids.paginator.page_range %}
+                        {% if bids.number == num %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ num }}</span>
+                            </li>
+                        {% elif num > bids.number|add:'-3' and num < bids.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if bids.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ bids.next_page_number }}">Next</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+    {% else %}
+        <div class="alert alert-info text-center py-5">
+            <h5><i class="fas fa-inbox"></i> No bids placed yet</h5>
+            <p class="mb-3">Start bidding on auctions to see your bid history here</p>
+            <a href="{% url 'auction_list' %}" class="btn btn-primary">
+                <i class="fas fa-gavel"></i> Browse Auctions
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

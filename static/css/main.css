@@ -1,0 +1,24 @@
+:root{
+    --primary:#1f7a3d;
+    --secondary:#228246;
+    --accent:#f59e0b;
+    --light:#f8faf9;
+}
+
+body{
+    background:var(--light);
+    font-family:'Poppins',sans-serif;
+}
+
+.navbar{
+    background:var(--primary);
+}
+
+.btn-primary{
+    background:var(--primary);
+    border:none;
+}
+
+.btn-primary:hover{
+    background:var(--secondary);
+}

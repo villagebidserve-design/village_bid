@@ -1,0 +1,136 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Live Auctions - VillageBid{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row align-items-center mb-4">
+        <div class="col-md-8">
+            <h2 class="fw-bold"><i class="fas fa-gavel me-2"></i>Live Auctions</h2>
+            <p class="text-muted">Explore active auctions, see current bids, and place your offer instantly.</p>
+        </div>
+        <div class="col-md-4 text-md-end">
+            <a href="{% url 'create_product' %}" class="btn btn-outline-primary">Create Auction</a>
+        </div>
+    </div>
+
+    <div class="card mb-4 shadow-sm border-0">
+        <div class="card-body">
+            <form method="get" class="row gx-2 gy-3 align-items-end">
+                <div class="col-md-4">
+                    <label class="form-label small text-muted">Search auctions</label>
+                    <input type="search" name="q" class="form-control" placeholder="Search livestock, equipment, sellers..." value="{{ q }}">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small text-muted">Category</label>
+                    <input type="text" name="category" class="form-control" placeholder="Category slug" value="{{ category }}">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small text-muted">Location</label>
+                    <input type="text" name="location" class="form-control" placeholder="Location" value="{{ location }}">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small text-muted">Sort by</label>
+                    <select name="sort" class="form-select">
+                        <option value="-end_time" {% if sort == '-end_time' %}selected{% endif %}>Ending soon</option>
+                        <option value="current_price" {% if sort == 'current_price' %}selected{% endif %}>Lowest bid</option>
+                        <option value="-current_price" {% if sort == '-current_price' %}selected{% endif %}>Highest bid</option>
+                        <option value="total_bids" {% if sort == 'total_bids' %}selected{% endif %}>Most bids</option>
+                        <option value="title" {% if sort == 'title' %}selected{% endif %}>Title A-Z</option>
+                    </select>
+                </div>
+                <div class="col-md-1 text-end">
+                    <button class="btn btn-primary w-100" type="submit">Go</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {% if auctions %}
+        <div class="row g-4">
+            {% for auction in auctions %}
+                <div class="col-sm-12 col-md-6 col-lg-4">
+                    <div class="card shadow-sm border-0 h-100 card-hover position-relative">
+                        <div class="position-relative" style="height: 220px; overflow: hidden;">
+                            {% if auction.product.images.all.first.image %}
+                                <img src="{{ auction.product.images.all.first.image.url }}" class="card-img-top w-100" style="height: 100%; object-fit: cover;">
+                            {% else %}
+                                <div class="w-100 h-100 bg-light d-flex align-items-center justify-content-center">
+                                    <i class="fas fa-image text-muted" style="font-size: 50px;"></i>
+                                </div>
+                            {% endif %}
+                            <span class="badge bg-success position-absolute top-0 start-0 m-2">Live</span>
+                            <a href="{% url 'auction_detail' auction.id %}" class="btn btn-sm btn-warning position-absolute bottom-0 end-0 m-3 shadow">
+                                <i class="fas fa-gavel me-1"></i> Bid Now
+                            </a>|highlight:q }}</h5>
+                            <p class="text-muted small mb-3 text-truncate">Seller: {{ auction.seller.username|highlight:q
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title mb-2 text-truncate">{{ auction.product.title }}</h5>
+                            <p class="text-muted small mb-3 text-truncate">Seller: {{ auction.seller.username }}</p>
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="small text-muted">Current</span>
+                                    <span class="small text-muted">Min next</span>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="h5 text-primary fw-bold">₹{{ auction.current_price }}</span>
+                                    <span class="badge bg-light text-dark">₹{{ auction.current_price|add:auction.minimum_bid_increment }}</span>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <span class="small text-muted">Starting price</span>
+                                <p class="mb-1">₹{{ auction.starting_price }}</p>
+                                <span class="small text-muted">{{ auction.total_bids }} bids</span>
+                            </div>
+                            <p class="small mb-3 text-warning"><i class="fas fa-clock me-1"></i>{{ auction.formatted_time_remaining }}</p>
+                            <div class="mt-auto">
+                                <a href="{% url 'auction_detail' auction.id %}" class="btn btn-primary w-100">
+                                    <i class="fas fa-gavel me-2"></i> Bid Now
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        {% if auctions.has_other_pages %}
+            <nav aria-label="Page navigation" class="mt-5">
+                <ul class="pagination justify-content-center">
+                    {% if auctions.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ auctions.previous_page_number }}{{ query_string }}">
+                                Previous
+                            </a>
+                        </li>
+                    {% endif %}
+                    {% for num in auctions.paginator.page_range %}
+                        {% if auctions.number == num %}
+                            <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                        {% elif num > auctions.number|add:'-3' and num < auctions.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ num }}{{ query_string }}">
+                                    {{ num }}
+                                </a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    {% if auctions.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ auctions.next_page_number }}{{ query_string }}">
+                                Next
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+    {% else %}
+        <div class="alert alert-info text-center py-5">
+            <h5><i class="fas fa-inbox"></i> No live auctions found</h5>
+            <p class="mb-0">Try a different filter or check back later.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

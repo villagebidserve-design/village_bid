@@ -1,0 +1,25 @@
+{% extends 'base/base.html' %}
+
+{% block content %}
+
+<h2>My Favorites</h2>
+
+{% for favorite in favorites %}
+
+<div class="card mb-2">
+
+    <div class="card-body">
+
+        {{ favorite.product.title }}
+
+    </div>
+
+</div>
+
+{% empty %}
+
+<p>No favorites yet.</p>
+
+{% endfor %}
+
+{% endblock %}

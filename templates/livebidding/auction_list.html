@@ -1,0 +1,228 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Live Auctions - Bidding Platform{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1><i class="fas fa-gavel" style="color: #2563eb;"></i> Live Auctions</h1>
+            <p class="text-muted">Anonymous bidding for livestock</p>
+        </div>
+        <div class="col-md-4 text-end">
+            {% if user.is_professional_seller %}
+            <a href="{% url 'livebidding:create_auction' %}" class="btn btn-success btn-lg">
+                <i class="fas fa-plus"></i> Create Auction
+            </a>
+            {% else %}
+            <a href="#" class="btn btn-outline-success btn-lg" data-bs-toggle="modal" data-bs-target="#becomeSeller">
+                <i class="fas fa-store"></i> Become Seller
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Filters & Search -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <form method="get" class="input-group">
+                <input type="text" class="form-control form-control-lg" name="q" 
+                       placeholder="Search auctions..." value="{{ search_query }}">
+                <button class="btn btn-primary btn-lg" type="submit">
+                    <i class="fas fa-search"></i> Search
+                </button>
+            </form>
+        </div>
+        <div class="col-md-6">
+            <select class="form-select form-select-lg" onchange="filterByType(this.value)">
+                <option value="">All Livestock Types</option>
+                {% for type in livestock_types %}
+                <option value="{{ type.slug }}" {% if selected_type == type.slug %}selected{% endif %}>
+                    {{ type.name }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+
+    <!-- Auctions Grid -->
+    <div class="row g-4">
+        {% for auction in auctions %}
+        <div class="col-sm-6 col-lg-4">
+            <div class="card auction-card shadow-sm h-100 transition-all" style="border-radius: 12px; overflow: hidden;">
+                <!-- Auction Image -->
+                <div class="position-relative overflow-hidden" style="height: 200px; background: #f3f4f6;">
+                    {% if auction.product.images.first %}
+                    <img src="{{ auction.product.images.first.image.url }}" 
+                         class="w-100 h-100 object-fit-cover" alt="{{ auction.product.title }}">
+                    {% else %}
+                    <div class="d-flex align-items-center justify-content-center h-100">
+                        <i class="fas fa-image fa-4x text-muted"></i>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Status Badge -->
+                    <div class="position-absolute top-0 end-0 p-2">
+                        <span class="badge bg-primary">
+                            <i class="fas fa-clock"></i> Active
+                        </span>
+                    </div>
+                    
+                    <!-- Time Remaining -->
+                    <div class="position-absolute bottom-0 end-0 bg-dark text-white p-2 rounded-start" style="font-size: 11px;">
+                        <i class="fas fa-hourglass-end"></i> 
+                        <span class="countdown" data-end-time="{{ auction.end_time|date:'c' }}">--:--</span>
+                    </div>
+                </div>
+
+                <!-- Card Body -->
+                <div class="card-body">
+                    <!-- Title -->
+                    <h5 class="card-title text-truncate" title="{{ auction.product.title }}">
+                        {{ auction.product.title }}
+                    </h5>
+                    
+                    <!-- Quantity & Type -->
+                    <div class="mb-2">
+                        <small class="text-muted">
+                            <i class="fas fa-boxes"></i> Qty: {{ auction.product.quantity }}
+                        </small>
+                    </div>
+
+                    <!-- Current Bid -->
+                    <div class="mb-3 p-3 bg-light rounded">
+                        <small class="text-muted d-block">Current Highest Bid</small>
+                        <h4 class="mb-0" style="color: #2563eb;">
+                            ₹{{ bidding_room.highest_bid|default:auction.starting_price }}
+                        </h4>
+                        <small class="text-muted">
+                            {{ auction.bidding_room.total_bids }} bids • 
+                            {{ auction.bidding_room.unique_bidders }} bidders
+                        </small>
+                    </div>
+
+                    <!-- Seller Info (Anonymous) -->
+                    <div class="d-flex align-items-center mb-3 pb-3 border-bottom">
+                        <div class="flex-grow-1">
+                            <small class="text-muted d-block">Seller Rating</small>
+                            <div>
+                                {% for i in "x|add:auction.seller.seller_rating|stringformat:'d'" %}
+                                <i class="fas fa-star" style="color: #fbbf24;"></i>
+                                {% endfor %}
+                                ({{ auction.seller.seller_rating }}/5)
+                            </div>
+                        </div>
+                        {% if auction.seller.verification_badge %}
+                        <div>
+                            <span class="badge bg-success"><i class="fas fa-check-circle"></i> Verified</span>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Join Button -->
+                    <a href="{% url 'livebidding:bidding_room' auction.id %}" 
+                       class="btn btn-primary w-100">
+                        <i class="fas fa-gavel"></i> Join Auction
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="alert alert-info text-center py-5">
+                <i class="fas fa-inbox fa-3x mb-3"></i>
+                <h4>No Auctions Available</h4>
+                <p class="text-muted">Check back soon for live livestock auctions</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+    <nav aria-label="Page navigation" class="mt-5">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page=1{% if search_query %}&q={{ search_query }}{% endif %}">First</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}">Previous</a>
+            </li>
+            {% endif %}
+
+            {% for num in page_obj.paginator.page_range %}
+            <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                <a class="page-link" href="?page={{ num }}{% if search_query %}&q={{ search_query }}{% endif %}">{{ num }}</a>
+            </li>
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}">Next</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&q={{ search_query }}{% endif %}">Last</a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+
+<style>
+.auction-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.auction-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
+}
+
+.object-fit-cover {
+    object-fit: cover;
+}
+
+.transition-all {
+    transition: all 0.3s ease;
+}
+</style>
+
+<script>
+function filterByType(slug) {
+    const url = new URL(window.location);
+    if (slug) {
+        url.searchParams.set('livestock_type', slug);
+    } else {
+        url.searchParams.delete('livestock_type');
+    }
+    window.location = url.toString();
+}
+
+// Countdown Timer
+function updateCountdowns() {
+    document.querySelectorAll('.countdown').forEach(el => {
+        const endTime = new Date(el.dataset.endTime);
+        const now = new Date();
+        const diff = endTime - now;
+        
+        if (diff <= 0) {
+            el.textContent = 'ENDED';
+            el.parentElement.parentElement.classList.add('bg-danger');
+        } else {
+            const hours = Math.floor(diff / 3600000);
+            const minutes = Math.floor((diff % 3600000) / 60000);
+            const seconds = Math.floor((diff % 60000) / 1000);
+            
+            el.textContent = `${hours}h ${minutes}m ${seconds}s`;
+        }
+    });
+}
+
+setInterval(updateCountdowns, 1000);
+updateCountdowns();
+</script>
+{% endblock %}
