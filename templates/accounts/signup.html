@@ -1,103 +1,462 @@
-{% extends 'base/base.html' %}
-{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Village Bid - Sign Up</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-{% block title %}Sign Up - VillageBid{% endblock %}
+        body {
+            font-family: 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(-45deg, #ff6b6b, #ffa94d, #74c0fc, #b197fc);
+            background-size: 400% 400%;
+            animation: gradient 15s ease infinite;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+        }
 
-{% block content %}
-<div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-6 col-lg-5">
-            <div class="card border-0 shadow-lg mt-5 mb-5">
-                <div class="card-body p-5">
-                    <div class="text-center mb-4">
-                        <h2 class="fw-bold text-primary">
-                            <i class="fas fa-user-plus"></i> Create Account
-                        </h2>
-                        <p class="text-muted">Join VillageBid and start trading livestock</p>
-                    </div>
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
 
-                    {% if messages %}
-                        {% for message in messages %}
-                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                                {{ message }}
-                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                            </div>
-                        {% endfor %}
-                    {% endif %}
+        body::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 300px;
+            height: 300px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            animation: float 20s infinite ease-in-out;
+            z-index: 1;
+        }
 
-                    <form method="post" novalidate>
-                        {% csrf_token %}
+        body::after {
+            content: '';
+            position: absolute;
+            bottom: -50%;
+            left: -50%;
+            width: 300px;
+            height: 300px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            animation: float 25s infinite ease-in-out reverse;
+            z-index: 1;
+        }
 
-                        {% for field in form %}
-                            {% if field.name != 'password2' %}
-                                <div class="mb-3">
-                                    <label for="{{ field.id_for_label }}" class="form-label fw-bold">
-                                        {% if field.name == 'username' %}
-                                            <i class="fas fa-user"></i>
-                                        {% elif field.name == 'email' %}
-                                            <i class="fas fa-envelope"></i>
-                                        {% elif field.name == 'first_name' %}
-                                            <i class="fas fa-id-card"></i>
-                                        {% elif field.name == 'last_name' %}
-                                            <i class="fas fa-id-card"></i>
-                                        {% elif field.name == 'password1' %}
-                                            <i class="fas fa-lock"></i>
-                                        {% endif %}
-                                        {{ field.label }}
-                                    </label>
-                                    {{ field }}
-                                    {% if field.errors %}
-                                        <div class="invalid-feedback d-block">
-                                            {{ field.errors.0 }}
-                                        </div>
-                                    {% endif %}
-                                    {% if field.help_text %}
-                                        <small class="form-text text-muted d-block mt-1">
-                                            {{ field.help_text|safe }}
-                                        </small>
-                                    {% endif %}
-                                </div>
-                            {% endif %}
-                        {% endfor %}
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) translateX(0px); }
+            50% { transform: translateY(30px) translateX(20px); }
+        }
 
-                        <!-- Password confirmation field -->
-                        <div class="mb-3">
-                            <label for="{{ form.password2.id_for_label }}" class="form-label fw-bold">
-                                <i class="fas fa-lock-open"></i> Confirm Password
-                            </label>
-                            {{ form.password2 }}
-                            {% if form.password2.errors %}
-                                <div class="invalid-feedback d-block">
-                                    {{ form.password2.errors.0 }}
-                                </div>
-                            {% endif %}
+        .signup-wrapper {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .signup-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 50px;
+            border-radius: 20px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2), 
+                        0 0 1px rgba(0, 0, 0, 0.1),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            animation: slideIn 0.6s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .signup-header {
+            text-align: center;
+            margin-bottom: 30px;
+            animation: slideIn 0.8s ease-out 0.2s both;
+        }
+
+        .poultry-icons {
+            font-size: 48px;
+            margin-bottom: 15px;
+            letter-spacing: 10px;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .signup-header h1 {
+            font-size: 32px;
+            background: linear-gradient(135deg, #ff6b6b 0%, #ffa94d 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+
+        .signup-header p {
+            color: #666;
+            font-size: 14px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+            animation: slideIn 0.8s ease-out both;
+        }
+
+        .form-group:nth-child(2) { animation-delay: 0.3s; }
+        .form-group:nth-child(3) { animation-delay: 0.35s; }
+        .form-group:nth-child(4) { animation-delay: 0.4s; }
+        .form-group:nth-child(5) { animation-delay: 0.45s; }
+        .form-group:nth-child(6) { animation-delay: 0.5s; }
+        .form-group:nth-child(7) { animation-delay: 0.55s; }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="password"],
+        input[type="tel"] {
+            width: 100%;
+            padding: 12px 14px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 14px;
+            font-family: 'Poppins', sans-serif;
+            transition: all 0.3s ease;
+            background: #f9fafb;
+            color: #333;
+        }
+
+        input[type="text"]:focus,
+        input[type="email"]:focus,
+        input[type="password"]:focus,
+        input[type="tel"]:focus {
+            outline: none;
+            border-color: #ff6b6b;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(255, 107, 107, 0.1),
+                        0 10px 20px rgba(255, 107, 107, 0.15);
+            transform: translateY(-2px);
+        }
+
+        button {
+            width: 100%;
+            padding: 13px;
+            background: linear-gradient(135deg, #ff6b6b 0%, #ffa94d 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 700;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 25px rgba(255, 107, 107, 0.3);
+            letter-spacing: 1px;
+            margin-top: 15px;
+            animation: slideIn 0.8s ease-out 0.6s both;
+            position: relative;
+            overflow: hidden;
+        }
+
+        button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(255, 107, 107, 0.4);
+        }
+
+        button:hover::before {
+            left: 100%;
+        }
+
+        button:active {
+            transform: translateY(-1px);
+        }
+
+        .error-message {
+            background: linear-gradient(135deg, #f87171 0%, #ef4444 100%);
+            color: white;
+            padding: 12px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            font-size: 13px;
+            font-weight: 500;
+            animation: slideIn 0.5s ease-out;
+            box-shadow: 0 10px 25px rgba(239, 68, 68, 0.2);
+        }
+
+        .success-message {
+            background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+            color: white;
+            padding: 12px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            font-size: 13px;
+            font-weight: 500;
+            animation: slideIn 0.5s ease-out;
+            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.2);
+        }
+
+        .footer-text {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+            color: #666;
+            animation: slideIn 0.8s ease-out 0.7s both;
+        }
+
+        .footer-text a {
+            color: #ff6b6b;
+            text-decoration: none;
+            font-weight: 700;
+            transition: all 0.3s ease;
+        }
+
+        .footer-text a:hover {
+            text-decoration: underline;
+        }
+
+        .helptext {
+            display: none;
+        }
+
+        .helptext-box {
+            background: #f0fdf4;
+            border-left: 3px solid #34d399;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        ul {
+            list-style: none;
+            margin: 8px 0;
+            padding-left: 0;
+        }
+
+        li {
+            margin-bottom: 3px;
+            padding-left: 15px;
+            position: relative;
+            font-size: 12px;
+        }
+
+        li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: #34d399;
+            font-weight: bold;
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 20px 0;
+            animation: slideIn 0.8s ease-out 0.5s both;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #e5e7eb;
+        }
+
+        .divider span {
+            padding: 0 15px;
+            color: #999;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .otp-section {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            animation: slideIn 0.6s ease-out;
+        }
+
+        .otp-section h3 {
+            color: #b45309;
+            font-size: 14px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        @media (max-width: 600px) {
+            .signup-container {
+                padding: 30px;
+            }
+
+            .signup-header h1 {
+                font-size: 24px;
+            }
+
+            .poultry-icons {
+                font-size: 36px;
+            }
+
+            button {
+                padding: 11px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="signup-wrapper">
+        <div class="signup-container">
+            <div class="signup-header">
+                <div class="poultry-icons">🐓🐐🐟</div>
+                <h1>Village Bid</h1>
+                <p>Livestock & Poultry Auction Platform</p>
+            </div>
+
+            <form method="post">
+                {% csrf_token %}
+
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="{% if message.tags %}{{ message.tags }}{% endif %}-message">
+                            {{ message }}
                         </div>
+                    {% endfor %}
+                {% endif %}
 
-                        {% if not otp_sent %}
-                            <div class="d-grid gap-2 mb-3">
-                                <button type="submit" name="send_otp" class="btn btn-primary btn-lg fw-bold">
-                                    <i class="fas fa-envelope"></i> Send OTP to Email
-                                </button>
-                            </div>
-                        {% else %}
-                            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                                <strong><i class="fas fa-check-circle"></i> OTP Sent!</strong> Check your email for the verification code.
-                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                            </div>
-                            <div class="mb-3">
-                                <label for="{{ otp_form.otp_code.id_for_label }}" class="form-label fw-bold">
-                                    <i class="fas fa-key"></i> OTP Code
-                                </label>
-                                {{ otp_form.otp_code }}
-                                {% if otp_form.otp_code.errors %}
-                                    <div class="invalid-feedback d-block">
-                                        {{ otp_form.otp_code.errors.0 }}
+                {% if form.non_field_errors %}
+                    <div class="error-message">
+                        {% for error in form.non_field_errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                {% if not otp_sent %}
+                    <!-- Registration Fields -->
+                    {% for field in form %}
+                        {% if field.name != 'password2' %}
+                            <div class="form-group">
+                                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                {{ field }}
+                                {% if field.errors %}
+                                    <div class="error-message" style="margin-top: 5px; padding: 8px; font-size: 12px;">
+                                        {% for error in field.errors %}
+                                            {{ error }}
+                                        {% endfor %}
                                     </div>
-                                {% else %}
-                                    <small class="form-text text-muted d-block mt-1">Enter the 6-digit code from the box above</small>
+                                {% endif %}
+                                {% if field.help_text %}
+                                    <div class="helptext-box">
+                                        {{ field.help_text|safe }}
+                                    </div>
                                 {% endif %}
                             </div>
-                            <div class="d-grid gap-2 mb-3">
+                        {% endif %}
+                    {% endfor %}
+
+                    <!-- Confirm Password -->
+                    <div class="form-group">
+                        <label for="{{ form.password2.id_for_label }}">{{ form.password2.label }}</label>
+                        {{ form.password2 }}
+                        {% if form.password2.errors %}
+                            <div class="error-message" style="margin-top: 5px; padding: 8px; font-size: 12px;">
+                                {% for error in form.password2.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <button type="submit" name="send_otp">📧 Send OTP to Email</button>
+                {% else %}
+                    <!-- OTP Verification -->
+                    <div class="otp-section">
+                        <h3>✅ OTP Sent!</h3>
+                        <p>Check your email for the 6-digit verification code. It will expire in 10 minutes.</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ otp_form.otp_code.id_for_label }}">{{ otp_form.otp_code.label }}</label>
+                        {{ otp_form.otp_code }}
+                        {% if otp_form.otp_code.errors %}
+                            <div class="error-message" style="margin-top: 5px; padding: 8px; font-size: 12px;">
+                                {% for error in otp_form.otp_code.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <button type="submit" name="verify_otp">🔐 Verify & Create Account</button>
+                {% endif %}
+            </form>
+
+            <div class="divider">
+                <span>Already have an account?</span>
+            </div>
+
+            <div class="footer-text">
+                <a href="/accounts/login/">Sign In Here</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
                                 <button type="submit" name="verify_otp" class="btn btn-success btn-lg fw-bold">
                                     <i class="fas fa-check"></i> Verify OTP and Create Account
                                 </button>
