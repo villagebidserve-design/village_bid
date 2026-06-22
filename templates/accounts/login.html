@@ -12,61 +12,155 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+            background-size: 400% 400%;
+            animation: gradient 15s ease infinite;
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
             padding: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 300px;
+            height: 300px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            animation: float 20s infinite ease-in-out;
+            z-index: 1;
+        }
+
+        body::after {
+            content: '';
+            position: absolute;
+            bottom: -50%;
+            left: -50%;
+            width: 300px;
+            height: 300px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            animation: float 25s infinite ease-in-out reverse;
+            z-index: 1;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) translateX(0px); }
+            50% { transform: translateY(30px) translateX(20px); }
+        }
+
+        .login-wrapper {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 450px;
         }
 
         .login-container {
-            background: white;
-            padding: 40px;
-            border-radius: 10px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-            width: 100%;
-            max-width: 400px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 50px;
+            border-radius: 20px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2), 
+                        0 0 1px rgba(0, 0, 0, 0.1),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            animation: slideIn 0.6s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .login-header {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 40px;
+            animation: slideIn 0.8s ease-out 0.2s both;
+        }
+
+        .logo {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 28px;
+            font-weight: bold;
+            margin: 0 auto 20px;
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
         }
 
         .login-header h1 {
-            font-size: 28px;
-            color: #333;
-            margin-bottom: 10px;
+            font-size: 32px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+            font-weight: 700;
         }
 
         .login-header p {
-            color: #666;
+            color: #999;
             font-size: 14px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
         }
 
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 24px;
+            animation: slideIn 0.8s ease-out both;
         }
+
+        .form-group:nth-child(2) { animation-delay: 0.3s; }
+        .form-group:nth-child(3) { animation-delay: 0.4s; }
+        .form-group:nth-child(4) { animation-delay: 0.5s; }
 
         label {
             display: block;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
             color: #333;
-            font-weight: 500;
-            font-size: 14px;
+            font-weight: 600;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
         input[type="text"],
         input[type="password"],
         input[type="email"] {
             width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 14px;
-            transition: border-color 0.3s;
+            padding: 14px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 15px;
+            font-family: 'Poppins', sans-serif;
+            transition: all 0.3s ease;
+            background: #f9fafb;
+            color: #333;
         }
 
         input[type="text"]:focus,
@@ -74,66 +168,109 @@
         input[type="email"]:focus {
             outline: none;
             border-color: #667eea;
-            box-shadow: 0 0 5px rgba(102, 126, 234, 0.2);
+            background: white;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1),
+                        0 10px 20px rgba(102, 126, 234, 0.15);
+            transform: translateY(-2px);
         }
 
         button {
             width: 100%;
-            padding: 12px;
+            padding: 14px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
-            border-radius: 5px;
-            font-size: 16px;
-            font-weight: 600;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 700;
+            text-transform: uppercase;
             cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+            letter-spacing: 1px;
+            margin-top: 10px;
+            animation: slideIn 0.8s ease-out 0.6s both;
+            position: relative;
+            overflow: hidden;
+        }
+
+        button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s;
         }
 
         button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(102, 126, 234, 0.4);
+        }
+
+        button:hover::before {
+            left: 100%;
         }
 
         button:active {
-            transform: translateY(0);
+            transform: translateY(-1px);
         }
 
         .error-message {
-            background: #f8d7da;
-            color: #721c24;
-            padding: 12px;
-            border-radius: 5px;
+            background: linear-gradient(135deg, #f87171 0%, #ef4444 100%);
+            color: white;
+            padding: 14px;
+            border-radius: 10px;
             margin-bottom: 20px;
-            font-size: 14px;
-            border: 1px solid #f5c6cb;
+            font-size: 13px;
+            font-weight: 500;
+            animation: slideIn 0.5s ease-out;
+            box-shadow: 0 10px 25px rgba(239, 68, 68, 0.2);
         }
 
         .success-message {
-            background: #d4edda;
-            color: #155724;
-            padding: 12px;
-            border-radius: 5px;
+            background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+            color: white;
+            padding: 14px;
+            border-radius: 10px;
             margin-bottom: 20px;
-            font-size: 14px;
-            border: 1px solid #c3e6cb;
+            font-size: 13px;
+            font-weight: 500;
+            animation: slideIn 0.5s ease-out;
+            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.2);
         }
 
         .footer-text {
             text-align: center;
-            margin-top: 20px;
+            margin-top: 25px;
             font-size: 14px;
             color: #666;
+            animation: slideIn 0.8s ease-out 0.7s both;
         }
 
         .footer-text a {
             color: #667eea;
             text-decoration: none;
-            font-weight: 600;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            position: relative;
         }
 
-        .footer-text a:hover {
-            text-decoration: underline;
+        .footer-text a::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: #667eea;
+            transition: width 0.3s ease;
+        }
+
+        .footer-text a:hover::after {
+            width: 100%;
         }
 
         .helptext {
@@ -143,56 +280,110 @@
         ul {
             list-style: none;
             margin: 10px 0;
-            padding: 10px;
-            background: #f9f9f9;
-            border-left: 3px solid #667eea;
-            border-radius: 3px;
-            font-size: 13px;
+            padding: 12px;
+            background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+            border-left: 4px solid #667eea;
+            border-radius: 8px;
+            font-size: 12px;
             color: #666;
         }
 
         li {
             margin-bottom: 5px;
+            padding-left: 10px;
+            position: relative;
+        }
+
+        li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 30px 0;
+            animation: slideIn 0.8s ease-out 0.5s both;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #e5e7eb;
+        }
+
+        .divider span {
+            padding: 0 15px;
+            color: #999;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        @media (max-width: 600px) {
+            .login-container {
+                padding: 30px;
+            }
+
+            .login-header h1 {
+                font-size: 24px;
+            }
+
+            button {
+                padding: 12px;
+                font-size: 14px;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="login-container">
-        <div class="login-header">
-            <h1>Village Bid</h1>
-            <p>Welcome Back</p>
-        </div>
+    <div class="login-wrapper">
+        <div class="login-container">
+            <div class="login-header">
+                <div class="logo">🏘️</div>
+                <h1>Village Bid</h1>
+                <p>Auction Platform</p>
+            </div>
 
-        <form method="post">
-            {% csrf_token %}
+            <form method="post">
+                {% csrf_token %}
 
-            {% if form.non_field_errors %}
-                <div class="error-message">
-                    {% for error in form.non_field_errors %}
-                        {{ error }}
-                    {% endfor %}
-                </div>
-            {% endif %}
+                {% if form.non_field_errors %}
+                    <div class="error-message">
+                        {% for error in form.non_field_errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
 
-            {% for field in form %}
-                <div class="form-group">
-                    {{ field.label_tag }}
-                    {{ field }}
-                    {% if field.errors %}
-                        <div class="error-message" style="margin-top: 5px;">
-                            {% for error in field.errors %}
-                                {{ error }}
-                            {% endfor %}
-                        </div>
-                    {% endif %}
-                </div>
-            {% endfor %}
+                {% for field in form %}
+                    <div class="form-group">
+                        {{ field.label_tag }}
+                        {{ field }}
+                        {% if field.errors %}
+                            <div class="error-message" style="margin-top: 8px;">
+                                {% for error in field.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
 
-            <button type="submit">Login</button>
-        </form>
+                <button type="submit">Sign In</button>
+            </form>
 
-        <div class="footer-text">
-            Don't have an account? <a href="/accounts/register/">Sign up here</a>
+            <div class="divider">
+                <span>New to Village Bid?</span>
+            </div>
+
+            <div class="footer-text">
+                <a href="/accounts/register/">Create an Account</a>
+            </div>
         </div>
     </div>
 </body>
