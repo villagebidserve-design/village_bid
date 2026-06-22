@@ -16,3 +16,6 @@ celery==5.4.0
 razorpay==1.0.0
 sqlparse==0.5.5
 tzdata==2026.2
+whitenoise==6.6.0
+gunicorn==21.2.0
+cloudinary==1.36.0
